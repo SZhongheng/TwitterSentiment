@@ -10,8 +10,8 @@ using tweeinvi's package to manipulate twitter api, this program captures a stre
 
  ## Future features
  
- [] aggregate the tweets so as to find a balance between the two filters ie having equal amount of tweets for the 2 filters.
- [] color the tweets appropriately, red for negative, green for positive.
- [] a better stop condition, instead of ctrl - c.
- [] export to a db/excel sheet.
- [] use Tableau for data visualization.
+- [ ]  aggregate the tweets so as to find a balance between the two filters ie having equal amount of tweets for the 2 filters.
+- [ ]  color the tweets appropriately, red for negative, green for positive.
+- [ ]  a better stop condition, instead of ctrl - c.
+- [ ]  export to a db/excel sheet.
+- [ ]  use Tableau for data visualization.
