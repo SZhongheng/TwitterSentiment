@@ -6,8 +6,8 @@ using Tweetinvi;
 using Tweetinvi.Events;
 using Azure;
 using Azure.AI.TextAnalytics;
-
-
+using System.Threading.Tasks;
+using Tweetinvi.Models;
 
 namespace TwitterSentiment
 {
@@ -19,36 +19,56 @@ namespace TwitterSentiment
         private static readonly string apiSecret = ConfigurationManager.AppSettings.Get("twitterApiSecret");
         private static readonly string OauthSecret = ConfigurationManager.AppSettings.Get("OauthSecret");
         private static readonly string OauthKey = ConfigurationManager.AppSettings.Get("OauthKey");
-        static void Main(string[] args)
+        async static Task Main(string[] args)
         {
 
             
             TwitterClient twitter = new TwitterClient(apiKey, apiSecret, OauthKey, OauthSecret);
             var stream = twitter.Streams.CreateFilteredStream();
-            //stream.AddTrack("Trump");
-            stream.AddTrack("Testing");
-            stream.AddLanguageFilter("en");
-            stream.MatchingTweetReceived += OnMatchedTweet;
-        }
+            stream.AddTrack("Trump");
+            stream.AddTrack("Biden");
+            stream.AddLanguageFilter(LanguageFilter.English);
 
-        private static void OnMatchedTweet(object sender, MatchedTweetReceivedEventArgs args)
-        {
-            var client = new TextAnalyticsClient(endpoint, credentials);
-            var sanitized = Sanitize(args.Tweet.FullText);
-            Console.WriteLine(args.Tweet);
-            DocumentSentiment documentSentiment = client.AnalyzeSentiment(sanitized);
-            Console.WriteLine($"Document sentiment: {documentSentiment.Sentiment}\n");
-            foreach (var sentence in documentSentiment.Sentences)
+
+            stream.MatchingTweetReceived += (sender, eventReceived) =>
             {
-                Console.WriteLine($"\tText: \"{sentence.Text}\"");
-                Console.WriteLine($"\tSentence sentiment: {sentence.Sentiment}");
-                Console.WriteLine($"\tPositive score: {sentence.ConfidenceScores.Positive:0.00}");
-                Console.WriteLine($"\tNegative score: {sentence.ConfidenceScores.Negative:0.00}");
-                Console.WriteLine($"\tNeutral score: {sentence.ConfidenceScores.Neutral:0.00}\n");
-            }
+                var client = new TextAnalyticsClient(endpoint, credentials);
+                var sanitized = Sanitize(eventReceived.Tweet.Text);
+                DocumentSentiment documentSentiment = client.AnalyzeSentiment(sanitized);
+                Console.WriteLine($"Document sentiment: {documentSentiment.Sentiment}\n");
+                foreach (var sentence in documentSentiment.Sentences)
+                {
+                    Console.WriteLine($"\tText: \"{sentence.Text}\"");
+                    Console.WriteLine($"\tSentence sentiment: {sentence.Sentiment}");
+                    Console.WriteLine($"\tPositive score: {sentence.ConfidenceScores.Positive:0.00}");
+                    Console.WriteLine($"\tNegative score: {sentence.ConfidenceScores.Negative:0.00}");
+                    Console.WriteLine($"\tNeutral score: {sentence.ConfidenceScores.Neutral:0.00}\n");
+                }
+                Console.WriteLine(eventReceived.Tweet);
+            };
 
-
+            await stream.StartMatchingAnyConditionAsync();
+            
         }
+
+        //private static void OnMatchedTweet(object sender, MatchedTweetReceivedEventArgs args)
+        //{
+        //    var client = new TextAnalyticsClient(endpoint, credentials);
+        //    var sanitized = Sanitize(args.Tweet.FullText);
+        //    Console.WriteLine(args.Tweet);
+        //    DocumentSentiment documentSentiment = client.AnalyzeSentiment(sanitized);
+        //    Console.WriteLine($"Document sentiment: {documentSentiment.Sentiment}\n");
+        //    foreach (var sentence in documentSentiment.Sentences)
+        //    {
+        //        Console.WriteLine($"\tText: \"{sentence.Text}\"");
+        //        Console.WriteLine($"\tSentence sentiment: {sentence.Sentiment}");
+        //        Console.WriteLine($"\tPositive score: {sentence.ConfidenceScores.Positive:0.00}");
+        //        Console.WriteLine($"\tNegative score: {sentence.ConfidenceScores.Negative:0.00}");
+        //        Console.WriteLine($"\tNeutral score: {sentence.ConfidenceScores.Neutral:0.00}\n");
+        //    }
+
+
+        //}
 
         private static string Sanitize(string raw)
         {
