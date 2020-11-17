@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Azure.AI.TextAnalytics" Version="5.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
     <PackageReference Include="TweetinviAPI" Version="5.0.2" />
   </ItemGroup>
 
